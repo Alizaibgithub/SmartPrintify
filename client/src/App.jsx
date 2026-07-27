@@ -50,6 +50,10 @@ function CheckPage() {
         checks: ['titleFormatting', 'marginSpacing', 'fontConsistency'],
       })
 
+      if (response?.success === false) {
+        throw new Error(response.message || 'Validation failed.')
+      }
+
       setStatus('success')
       setResult(response)
     } catch (err) {
@@ -94,15 +98,24 @@ function CheckPage() {
             {status === 'success' && result && (
               <>
                 <p>{result.message || 'Validation completed.'}</p>
+                {result.summary?.note ? <p className="summary-text">{result.summary.note}</p> : null}
                 {result.issues && result.issues.length > 0 ? (
                   <ul className="issue-list">
                     {result.issues.map((issue, index) => (
-                      <li key={index}>{issue}</li>
+                      <li key={index}>
+                        <strong>{issue.type || 'Check'}</strong>
+                        <span> — {issue.message || 'No detail provided.'}</span>
+                      </li>
                     ))}
                   </ul>
                 ) : (
                   <p>No formatting issues detected.</p>
                 )}
+                {result.gemini ? (
+                  <p className="summary-text">
+                    Gemini: {result.gemini.configured ? 'ready' : 'not configured'}
+                  </p>
+                ) : null}
               </>
             )}
             {status === 'idle' && (

@@ -5,13 +5,18 @@ const api = axios.create({
 })
 
 export const validateFormatting = async (formData) => {
-  const response = await api.post('/api/formatting/validate', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  })
+  try {
+    const response = await api.post('/api/formatting/validate', formData)
 
-  return response.data
+    if (response?.data?.success === false) {
+      throw new Error(response.data.message || 'Validation failed.')
+    }
+
+    return response.data
+  } catch (error) {
+    const message = error?.response?.data?.message || error?.message || 'Validation request failed.'
+    throw new Error(message)
+  }
 }
 
 export default api
