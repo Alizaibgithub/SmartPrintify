@@ -23,28 +23,38 @@ function HomePage() {
 function CheckPage() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('No analysis has been run yet.')
+  const [status, setStatus] = useState('idle')
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files?.[0] || null)
+    setError('')
+    setResult(null)
   }
 
   const handleAnalyze = async () => {
     if (!selectedFile) {
-      setMessage('Please choose a document first.')
+      setStatus('error')
+      setError('Please choose a document first.')
       return
     }
 
     setLoading(true)
-    setMessage('Sending document for validation...')
+    setStatus('loading')
+    setError('')
+    setResult(null)
 
     try {
       const response = await submitFormattingRequest(selectedFile, {
-        titleFormatting: true,
+        checks: ['titleFormatting', 'marginSpacing', 'fontConsistency'],
       })
-      setMessage(response.message || 'Validation request submitted successfully.')
-    } catch (error) {
-      setMessage(error.message || 'Validation failed.')
+
+      setStatus('success')
+      setResult(response)
+    } catch (err) {
+      setStatus('error')
+      setError(err.message || 'Validation failed.')
     } finally {
       setLoading(false)
     }
@@ -79,7 +89,28 @@ function CheckPage() {
         <div className="panel">
           <h3>Results</h3>
           <div className="results-box">
-            <p>{message}</p>
+            {status === 'loading' && <p>Preparing Gemini analysis...</p>}
+            {status === 'error' && <p className="error-text">{error}</p>}
+            {status === 'success' && result && (
+              <>
+                <p>{result.message || 'Validation completed.'}</p>
+                {result.issues && result.issues.length > 0 ? (
+                  <ul className="issue-list">
+                    {result.issues.map((issue, index) => (
+                      <li key={index}>{issue}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No formatting issues detected.</p>
+                )}
+              </>
+            )}
+            {status === 'idle' && (
+              <>
+                <p>No analysis has been run yet.</p>
+                <span>Results will appear here after processing.</span>
+              </>
+            )}
           </div>
         </div>
       </div>

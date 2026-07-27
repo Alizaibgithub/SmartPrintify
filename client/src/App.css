@@ -162,6 +162,16 @@
   font-size: 0.95rem;
 }
 
+.issue-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1rem;
+  color: #334155;
+}
+
+.error-text {
+  color: #b91c1c;
+}
+
 .eyebrow {
   display: inline-block;
   margin: 0 0 0.75rem;
