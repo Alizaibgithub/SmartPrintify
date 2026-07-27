@@ -1,9 +1,44 @@
 .app-shell {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.brand {
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  color: #334155;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav-link.active {
+  color: #1d4ed8;
+}
+
+.page-container {
+  flex: 1;
   display: grid;
   place-items: center;
   padding: 2rem;
-  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
 }
 
 .hero-card {
