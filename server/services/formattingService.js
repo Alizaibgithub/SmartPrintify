@@ -1,4 +1,5 @@
 require('dotenv').config();
+const formattingRules = require('../config/formattingRules');
 
 class FormattingService {
   parseGeminiPayload(text) {
@@ -52,12 +53,25 @@ class FormattingService {
     };
   }
 
+  extractDocumentData(file) {
+    const base64 = file.buffer ? file.buffer.toString('base64') : '';
+
+    return {
+      name: file.originalname || 'uploaded-document',
+      mimeType: file.mimetype || 'application/octet-stream',
+      sizeBytes: file.size || 0,
+      preview: file.buffer ? file.buffer.subarray(0, 200).toString('utf8') : '',
+      base64,
+    };
+  }
+
   async callGemini(file, options) {
     if (!process.env.GEMINI_API_KEY) {
       return this.createFallbackAnalysis(file, options);
     }
 
-    const prompt = `Review this document for formatting quality. Return JSON with keys "summary" and "issues". The issues should be an array of objects with "type", "severity", and "message". Focus on: ${options.checks.join(', ')}.`;
+    const documentData = this.extractDocumentData(file);
+    const prompt = `Review this document against the following formatting rules: ${JSON.stringify(formattingRules)}. The uploaded document data is: ${JSON.stringify(documentData)}. Return JSON with keys "summary" and "issues". The issues should be an array of objects with "type", "severity", and "message". Focus on: ${options.checks.join(', ')}.`;
 
     const payload = {
       contents: [
@@ -65,7 +79,7 @@ class FormattingService {
           parts: [
             { text: prompt },
             ...(file.buffer
-              ? [{ inlineData: { mimeType: file.mimetype, data: file.buffer.toString('base64') } }]
+              ? [{ inlineData: { mimeType: file.mimetype, data: documentData.base64 } }]
               : []),
           ],
         },

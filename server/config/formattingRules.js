@@ -1,7 +1,7 @@
 const formattingRules = {
   document: {
     allowedFormats: ["pdf", "docx"],
-    maxFileSizeMB: 10
+    maxFileSizeMB: 10,
   },
 
   page: {
@@ -9,32 +9,32 @@ const formattingRules = {
       top: "1 inch",
       bottom: "1 inch",
       left: "1 inch",
-      right: "1 inch"
+      right: "1 inch",
     },
-    pageNumbering: true
+    pageNumbering: true,
   },
 
   font: {
     family: "Times New Roman",
     size: "12pt",
     weight: "Normal",
-    color: "Black"
+    color: "Black",
   },
 
   spacing: {
     lineSpacing: "1.5",
-    paragraphSpacing: "6pt"
+    paragraphSpacing: "6pt",
   },
 
   headings: {
     mainHeading: {
       size: "14pt",
-      weight: "Bold"
+      weight: "Bold",
     },
     subHeading: {
       size: "12pt",
-      weight: "Bold"
-    }
+      weight: "Bold",
+    },
   },
 
   structure: {
@@ -45,18 +45,18 @@ const formattingRules = {
       "Methodology",
       "Results",
       "Conclusion",
-      "References"
-    ]
+      "References",
+    ],
   },
 
   references: {
-    required: true
+    required: true,
   },
 
   headerFooter: {
     headerRequired: true,
-    footerRequired: true
-  }
+    footerRequired: true,
+  },
 };
 
-export default formattingRules;
+module.exports = formattingRules;
