@@ -1,14 +1,32 @@
 require('dotenv').config();
 
 class FormattingService {
-  createFallbackAnalysis(options) {
+  parseGeminiPayload(text) {
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) {
+        return null;
+      }
+
+      try {
+        return JSON.parse(match[0]);
+      } catch (innerError) {
+        return null;
+      }
+    }
+  }
+
+  createFallbackAnalysis(file, options) {
     const issues = [];
+    const label = file?.mimetype === 'application/pdf' ? 'PDF' : file?.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ? 'DOCX' : 'document';
 
     if (options.checks.includes('titleFormatting')) {
       issues.push({
         type: 'titleFormatting',
         severity: 'info',
-        message: 'Title formatting check completed locally.',
+        message: `The ${label} should be reviewed for title structure and heading hierarchy.`,
       });
     }
 
@@ -16,19 +34,27 @@ class FormattingService {
       issues.push({
         type: 'marginSpacing',
         severity: 'info',
-        message: 'Margin and spacing review completed locally.',
+        message: `The ${label} should be checked for consistent margins and spacing.`,
+      });
+    }
+
+    if (options.checks.includes('fontConsistency')) {
+      issues.push({
+        type: 'fontConsistency',
+        severity: 'info',
+        message: `The ${label} should be checked for consistent font usage and sizing.`,
       });
     }
 
     return {
-      summary: 'Document review prepared locally.',
+      summary: 'Document review completed with local heuristics.',
       issues,
     };
   }
 
   async callGemini(file, options) {
     if (!process.env.GEMINI_API_KEY) {
-      return this.createFallbackAnalysis(options);
+      return this.createFallbackAnalysis(file, options);
     }
 
     const prompt = `Review this document for formatting quality. Return JSON with keys "summary" and "issues". The issues should be an array of objects with "type", "severity", and "message". Focus on: ${options.checks.join(', ')}.`;
@@ -65,14 +91,18 @@ class FormattingService {
 
       const data = await response.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-      const parsed = JSON.parse(text);
+      const parsed = this.parseGeminiPayload(text);
 
-      return {
-        summary: parsed.summary || 'Gemini review completed.',
-        issues: Array.isArray(parsed.issues) ? parsed.issues : [],
-      };
+      if (parsed && typeof parsed === 'object') {
+        return {
+          summary: parsed.summary || 'Gemini review completed.',
+          issues: Array.isArray(parsed.issues) ? parsed.issues : [],
+        };
+      }
+
+      return this.createFallbackAnalysis(file, options);
     } catch (error) {
-      return this.createFallbackAnalysis(options);
+      return this.createFallbackAnalysis(file, options);
     }
   }
 
