@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { NavLink, Routes, Route } from 'react-router-dom'
 import './App.css'
+import { submitFormattingRequest } from './services/formattingService.js'
 
 function HomePage() {
   return (
@@ -19,6 +21,35 @@ function HomePage() {
 }
 
 function CheckPage() {
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('No analysis has been run yet.')
+
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files?.[0] || null)
+  }
+
+  const handleAnalyze = async () => {
+    if (!selectedFile) {
+      setMessage('Please choose a document first.')
+      return
+    }
+
+    setLoading(true)
+    setMessage('Sending document for validation...')
+
+    try {
+      const response = await submitFormattingRequest(selectedFile, {
+        titleFormatting: true,
+      })
+      setMessage(response.message || 'Validation request submitted successfully.')
+    } catch (error) {
+      setMessage(error.message || 'Validation failed.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <section className="tool-card">
       <div className="tool-header">
@@ -26,8 +57,8 @@ function CheckPage() {
           <p className="eyebrow">Formatting Tool</p>
           <h2>Check document formatting</h2>
         </div>
-        <button type="button" className="primary-btn">
-          Analyze Document
+        <button type="button" className="primary-btn" onClick={handleAnalyze} disabled={loading}>
+          {loading ? 'Analyzing...' : 'Analyze Document'}
         </button>
       </div>
 
@@ -35,34 +66,20 @@ function CheckPage() {
         <div className="panel">
           <h3>Upload document</h3>
           <div className="upload-box">
-            <p>Drop your PDF or DOCX here</p>
+            <p>Choose a PDF or DOCX file</p>
             <span>Maximum size: 10MB</span>
-            <button type="button" className="secondary-btn">
+            <label className="secondary-btn file-label">
               Choose File
-            </button>
-          </div>
-
-          <div className="options-list">
-            <label>
-              <input type="checkbox" defaultChecked />
-              Title formatting
+              <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} />
             </label>
-            <label>
-              <input type="checkbox" defaultChecked />
-              Margin and spacing
-            </label>
-            <label>
-              <input type="checkbox" defaultChecked />
-              Font consistency
-            </label>
+            {selectedFile ? <p className="file-name">Selected: {selectedFile.name}</p> : null}
           </div>
         </div>
 
         <div className="panel">
           <h3>Results</h3>
           <div className="results-box">
-            <p>No analysis has been run yet.</p>
-            <span>Results will appear here after processing.</span>
+            <p>{message}</p>
           </div>
         </div>
       </div>

@@ -136,9 +136,30 @@
   color: #ffffff;
 }
 
+.primary-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .secondary-btn {
   background: #eff6ff;
   color: #1d4ed8;
+}
+
+.file-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-label input {
+  display: none;
+}
+
+.file-name {
+  margin-top: 0.75rem;
+  color: #1d4ed8;
+  font-size: 0.95rem;
 }
 
 .eyebrow {
