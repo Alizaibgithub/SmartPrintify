@@ -111,22 +111,28 @@ class FormattingService {
       checks: ['titleFormatting', 'marginSpacing', 'fontConsistency'],
     };
 
-    if (!input) {
+    if (input === undefined || input === null || input === '') {
       return defaults;
     }
 
     let parsed = input;
 
     if (typeof input === 'string') {
+      const trimmed = input.trim();
+
+      if (!trimmed) {
+        return defaults;
+      }
+
       try {
-        parsed = JSON.parse(input);
+        parsed = JSON.parse(trimmed);
       } catch (error) {
-        throw new Error('Invalid options format.');
+        return defaults;
       }
     }
 
     if (typeof parsed !== 'object' || Array.isArray(parsed) || parsed === null) {
-      throw new Error('Options must be a JSON object.');
+      return defaults;
     }
 
     return {
